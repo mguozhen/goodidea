@@ -91,11 +91,19 @@ Format: return ONLY a numbered list, one topic per line:
     return topics
 
 
+def _count_existing_topics() -> int:
+    """Count total numbered topics across all vol files."""
+    seen = set()
+    for f in TOPICS_DIR.glob("*.md"):
+        for m in re.finditer(r"^\d+\.\s+(.+)$", f.read_text(), re.MULTILINE):
+            seen.add(m.group(1).strip())
+    return len(seen)
+
+
 def _write_vol_file(vol_num: int, topics: list) -> Path:
     """Write a new vol markdown file."""
     today = date.today().strftime("%Y-%m-%d")
-    next_num = _latest_vol_number()  # offset for numbering
-    start = next_num * 50 + 1  # approximate global offset
+    start = _count_existing_topics() + 1  # continue global numbering from last topic
 
     lines = [
         f"# Vol.{vol_num:02d} — 新灵感批次 ({today})\n",
